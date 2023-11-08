@@ -1,0 +1,8 @@
+build/
+CMakeFiles/
+automaton
+*.cmake
+cmake_install.cmake
+CMakeCache.txt
+*.out
+Makefile
