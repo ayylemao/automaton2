@@ -20,6 +20,7 @@ class Grid
         std::mt19937 eng;
         float maxSpeed = 4.0f;
         float g = 0.4f;
+        float velConv = 0.4f;
         Grid(size_t x, size_t y);
         size_t from_2d(int x, int y);
         sf::Vector2i to_2d(size_t index);
@@ -30,9 +31,11 @@ class Grid
         Element& getElement(size_t index);
         void update();
         void updateCell(size_t index, size_t x, size_t y);
+        void updateMovableSolid(Element &currElement, size_t index, size_t x, size_t y);
         void updateVelocity(size_t index);
         void resetVelocity(size_t index);
-        int getVelUpdateCount(size_t index);
+        int getVelUpdateCountY(size_t index, float velY);
+        int getVelUpdateCountX(size_t index, float velX);
         DiagEnum checkDiag(CellState left_cell, CellState right_cell);
         CellState state(int x, int y);
 };

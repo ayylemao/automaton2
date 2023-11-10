@@ -7,7 +7,7 @@
 int main()
 {
     float frame_cap = 60.0;
-    auto grid = Grid(500, 500);
+    auto grid = Grid(200, 200);
     float windowWidth = 800;
     float windowHeight = 800;
     float updateInterval = 1.0/frame_cap;
@@ -26,7 +26,8 @@ int main()
     {
         grid.setElement(stone, i, 150);
     }
-
+    stone.sand();
+    grid.setElement(stone, 100, 10);
     renderer.setMargin(0);
 
 
@@ -65,7 +66,7 @@ int main()
 
         if (elapsed >= updateInterval && !mousePressLeft)
         {
-            std::cout << 1.0/elapsed << '\n';
+            //std::cout << 1.0/elapsed << '\n';
             elapsed = 0;
             grid.update();
         }

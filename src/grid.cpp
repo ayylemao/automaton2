@@ -90,9 +90,18 @@ void Grid::resetVelocity(size_t index)
     grid[index].vel.y = 0.0f;
 }
 
-int Grid::getVelUpdateCount(size_t index)
+int Grid::getVelUpdateCountY(size_t index, float velY)
 {
-    float absVelocity = std::abs(grid[index].vel.y);
+    float absVelocity = std::abs(velY);
+    int floored = std::floor(absVelocity);
+    float mod = absVelocity - floored;
+    std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+    return floored + (dist(eng) < mod ? 1 : 0);
+}
+
+int Grid::getVelUpdateCountX(size_t index, float velX)
+{
+    float absVelocity = std::abs(velX);
     int floored = std::floor(absVelocity);
     float mod = absVelocity - floored;
     std::uniform_real_distribution<float> dist(0.0f, 1.0f);
@@ -104,70 +113,99 @@ void Grid::updateCell(size_t index, size_t x, size_t y)
     Element& currElement = getElement(x, y);
     if (currElement.isMovable && !currElement.hasMoved)
     {
-        if (currElement.isSolid)
-        {
-            int y_down = y + 1;
-            CellState downState = state(x, y_down);
+        if (currElement.isSolid) 
+        { 
+            updateMovableSolid(currElement, index, x, y); 
+            return;
+        }
+    }
+}
 
-            switch (downState)
+void Grid::updateMovableSolid(Element& currElement, size_t index, size_t x, size_t y)
+{
+    int y_down = y + 1;
+    CellState downState = state(x, y_down);
+    switch (downState)
+    {
+        case CellState::Empty:
+        {
+            int updateCount = getVelUpdateCountY(index, currElement.vel.y);
+            if (updateCount < 1)
             {
-                case CellState::Empty:
-                {
-                    int updateCount = getVelUpdateCount(index);
-                    if (updateCount < 1)
-                    {
-                        updateVelocity(index);
-                        swapElement(x, y, x, y_down);
-                        return;
-                    }
-                    CellState checkFurther = CellState::Empty;
-                    for (int update = 0; update < updateCount; update++) {
-                        y_down = y_down + 1;
-                        checkFurther = state(x, y_down);
-                        if (checkFurther == CellState::OutOfBounds || checkFurther == CellState::Solid) {
-                            break; // Break out of the for-loop, not the switch statement
-                        }
-                    }
-                    if (checkFurther == CellState::OutOfBounds) {
-                        // If the condition is met, fall through to the OutOfBounds case
-                        // No break here allows the code to continue into the next case
-                    } else if (checkFurther == CellState::Solid){
-                        if (getElement(x, y_down).vel.y == 0.0f)
-                        {
-                            resetVelocity(index);
-                        }
-                        swapElement(x, y, x, y_down - 1);
-                        return; // Return if the condition is not met
-                    }
-                    else if (checkFurther == CellState::Empty)
-                    {
-                        updateVelocity(index);
-                        swapElement(x, y, x, y_down);
-                        return;
-                    }
-                    
-                }
-                case CellState::OutOfBounds:
-                    setElement(Element(), x, y);
-                    return;
-                case CellState::Solid:
-                {
-                    CellState leftDiag = state(x - 1, y_down);
-                    CellState rightDiag = state(x + 1, y_down);
-                    DiagEnum diag = checkDiag(leftDiag, rightDiag);
-                    if (diag == DiagEnum::Left) { 
-                        swapElement(x, y, x-1, y_down);
-                        }
-                    else if (diag == DiagEnum::Right) { 
-                        swapElement(x, y, x+1, y_down); 
-                        }
-                    return;
-                }
+                updateVelocity(index);
+                swapElement(x, y, x, y_down);
+                return;
+            }
+            CellState checkFurther = CellState::Empty;
+            for (int update = 0; update < updateCount; update++) {
+                y_down = y_down + 1;
+                checkFurther = state(x, y_down);
+                if (checkFurther == CellState::OutOfBounds || checkFurther == CellState::Solid) {
                     break;
-                default:
-                    break;
+                }
+            }
+            if (checkFurther == CellState::OutOfBounds) { }
+            else if (checkFurther == CellState::Solid)
+            {
+                if (getElement(x, y_down).vel.y == 0.0f)
+                {
+                    currElement.vel.x = utils::coinToss() ? -velConv * currElement.vel.y : velConv * currElement.vel.y;
+                    resetVelocity(index);
+                }
+                swapElement(x, y, x, y_down - 1);
+                return;
+            }
+            else if (checkFurther == CellState::Empty)
+            {
+                updateVelocity(index);
+                swapElement(x, y, x, y_down);
+                return;
             }
         }
+        case CellState::OutOfBounds:
+            setElement(Element(), x, y);
+            return;
+        case CellState::Solid:
+        {
+            CellState leftDiag = state(x - 1, y_down);
+            CellState rightDiag = state(x + 1, y_down);
+            DiagEnum diag = checkDiag(leftDiag, rightDiag);
+            if (diag == DiagEnum::Left) { swapElement(x, y, x-1, y_down); }
+            else if (diag == DiagEnum::Right) { swapElement(x, y, x+1, y_down); }
+            else if (diag == DiagEnum::None)
+            {
+                int updateCount;
+                if (std::abs(currElement.vel.x) > 0.0f) { updateCount = getVelUpdateCountX(index, currElement.vel.x); }
+                else { return; }
+                if (updateCount < 1)
+                {
+                    currElement.vel.x = 0;
+                    return;
+                }
+                for (int i = 0; i < updateCount; i++)
+                {
+                    size_t x_horizontal = x + utils::sign(currElement.vel.x) * (i+1);
+                    CellState horizontalCell = state(x_horizontal, y);
+                    CellState downCell = state(x_horizontal, y+1);
+                    if (horizontalCell == CellState::Empty && downCell == CellState::Empty)
+                    {
+                        currElement.vel.x = 0.0f;
+                        swapElement(x, y, x_horizontal, y);
+                    }
+                    else if (horizontalCell == CellState::Solid || horizontalCell == CellState::OutOfBounds)
+                    {
+                        currElement.vel.x = 0.0f;
+                        swapElement(x, y, x_horizontal - utils::sign(currElement.vel.x), y);
+                    }
+                }
+                currElement.vel.x *= currElement.friction;
+                swapElement(x, y, x + (updateCount+1) * utils::sign(currElement.vel.x), y);
+            }
+            return;
+        }
+            break;
+        default:
+            break;
     }
 }
 

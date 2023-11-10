@@ -13,6 +13,7 @@ struct Element
     bool hasMoved = false;
     sf::Color color = sf::Color(0, 0, 0, 0);
     sf::Vector2f vel;
+    float friction = 0.9;
     Element();
     void stone();
     void sand();
