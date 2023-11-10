@@ -7,13 +7,15 @@ project(chip8)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Add the executable
-add_executable(automaton src/main.cpp src/grid.cpp src/element.cpp src/utils.cpp)
+add_executable(automaton src/main.cpp src/grid.cpp src/element.cpp
+  src/utils.cpp src/renderer.cpp src/inputhandler.cpp)
 
 find_package(SFML 2.6 COMPONENTS graphics audio window system REQUIRED)
 target_link_libraries(automaton sfml-graphics sfml-audio sfml-window sfml-system)
 
 # Enable profiling with gprof for the chip8 target
 set_target_properties(automaton PROPERTIES
-    COMPILE_FLAGS "-pg"
-    LINK_FLAGS "-pg"
+    CXX_STANDARD 20
+    COMPILE_FLAGS "-Wall"
+    LINK_FLAGS ""
 )

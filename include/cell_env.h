@@ -9,3 +9,12 @@ enum class CellState {
     Liquid,
     Other
 };
+
+enum class DiagEnum
+{
+    Left,
+    Right,
+    Both,
+    None,
+    Other
+};
