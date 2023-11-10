@@ -3,7 +3,7 @@
 
 Element::Element() 
 { 
-
+    vel = sf::Vector2f(0.0f, 0.0f);
 };
 
 void Element::stone()

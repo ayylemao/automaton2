@@ -7,7 +7,7 @@
 int main()
 {
     float frame_cap = 60.0;
-    auto grid = Grid(200, 200);
+    auto grid = Grid(500, 500);
     float windowWidth = 800;
     float windowHeight = 800;
     float updateInterval = 1.0/frame_cap;
@@ -20,6 +20,12 @@ int main()
     sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Automaton");
     auto renderer = Renderer(window, grid, windowWidth, windowHeight);
     auto inputhandler = InputHandler(grid, renderer);
+    Element stone;
+    stone.stone();
+    for (size_t i = 0; i < grid.size_x; i++)
+    {
+        grid.setElement(stone, i, 150);
+    }
 
     renderer.setMargin(0);
 
@@ -59,7 +65,7 @@ int main()
 
         if (elapsed >= updateInterval && !mousePressLeft)
         {
-            //std::cout << 1.0/elapsed << '\n';
+            std::cout << 1.0/elapsed << '\n';
             elapsed = 0;
             grid.update();
         }

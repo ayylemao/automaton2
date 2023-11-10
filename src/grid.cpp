@@ -27,19 +27,21 @@ sf::Vector2i Grid::to_2d(size_t index)
 
 void Grid::setElement(Element element, size_t x, size_t y)
 {
-    grid[from_2d(x, y)] = element;
+    size_t index = y * size_x + x;
+    grid[index] = element;
 }
 
 void Grid::swapElement(size_t x1, size_t y1, size_t x2, size_t y2)
 {
     size_t index1 = from_2d(x1, y1);
     size_t index2 = from_2d(x2, y2);
+    grid[index1].hasMoved = true;
     std::swap(grid[index1], grid[index2]);
 }
 
 Element& Grid::getElement(size_t x, size_t y)
 {
-    size_t index = from_2d(x, y);
+    size_t index = y * size_x + x;
     return grid[index];
 }
 
@@ -60,38 +62,93 @@ void Grid::update()
         for (size_t i = 0; i < size_x; i++)
         {
             columnOffset = leftToRight ? i : -i - 1 + size_x;
-            updateCell(rowOffset + columnOffset);
+            updateCell(rowOffset + columnOffset, columnOffset, row);
         }
+    }
+
+    for (Element& ele : grid)
+    {
+        ele.hasMoved = false;
     }
 }
 
-void Grid::updateCell(size_t index)
+void Grid::updateVelocity(size_t index)
 {
-    int y_max = 0;
-    sf::Vector2i pos = to_2d(index);
-    auto x = pos.x;
-    auto y = pos.y;
+    Element& element = grid[index];
+    if (element.vel.y > maxSpeed)
+    {
+        element.vel.y = utils::sign(element.vel.y) * maxSpeed;
+    }
+    else
+    {
+        element.vel.y += g;
+    }
+}
+
+void Grid::resetVelocity(size_t index)
+{
+    grid[index].vel.y = 0.0f;
+}
+
+int Grid::getVelUpdateCount(size_t index)
+{
+    float absVelocity = std::abs(grid[index].vel.y);
+    int floored = std::floor(absVelocity);
+    float mod = absVelocity - floored;
+    std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+    return floored + (dist(eng) < mod ? 1 : 0);
+}
+
+void Grid::updateCell(size_t index, size_t x, size_t y)
+{
     Element& currElement = getElement(x, y);
-    if (currElement.isMovable)
+    if (currElement.isMovable && !currElement.hasMoved)
     {
         if (currElement.isSolid)
         {
             int y_down = y + 1;
             CellState downState = state(x, y_down);
 
-            if (y > y_max)
-            {
-                y_max = y;
-                //std::cout << y_max << '\n'; 
-            }
-
             switch (downState)
             {
+                case CellState::Empty:
+                {
+                    int updateCount = getVelUpdateCount(index);
+                    if (updateCount < 1)
+                    {
+                        updateVelocity(index);
+                        swapElement(x, y, x, y_down);
+                        return;
+                    }
+                    CellState checkFurther = CellState::Empty;
+                    for (int update = 0; update < updateCount; update++) {
+                        y_down = y_down + 1;
+                        checkFurther = state(x, y_down);
+                        if (checkFurther == CellState::OutOfBounds || checkFurther == CellState::Solid) {
+                            break; // Break out of the for-loop, not the switch statement
+                        }
+                    }
+                    if (checkFurther == CellState::OutOfBounds) {
+                        // If the condition is met, fall through to the OutOfBounds case
+                        // No break here allows the code to continue into the next case
+                    } else if (checkFurther == CellState::Solid){
+                        if (getElement(x, y_down).vel.y == 0.0f)
+                        {
+                            resetVelocity(index);
+                        }
+                        swapElement(x, y, x, y_down - 1);
+                        return; // Return if the condition is not met
+                    }
+                    else if (checkFurther == CellState::Empty)
+                    {
+                        updateVelocity(index);
+                        swapElement(x, y, x, y_down);
+                        return;
+                    }
+                    
+                }
                 case CellState::OutOfBounds:
                     setElement(Element(), x, y);
-                    return;
-                case CellState::Empty:
-                    swapElement(x, y, x, y_down);
                     return;
                 case CellState::Solid:
                 {

@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <set>
+#include <cmath>
 #include "../include/element.h"
 #include "../include/utils.h"
 #include "../include/cell_env.h"
@@ -17,6 +18,8 @@ class Grid
         std::set<size_t> updateSet;
         std::random_device rd;
         std::mt19937 eng;
+        float maxSpeed = 4.0f;
+        float g = 0.4f;
         Grid(size_t x, size_t y);
         size_t from_2d(int x, int y);
         sf::Vector2i to_2d(size_t index);
@@ -26,7 +29,10 @@ class Grid
         Element& getElement(size_t x, size_t y);
         Element& getElement(size_t index);
         void update();
-        void updateCell(size_t index);
+        void updateCell(size_t index, size_t x, size_t y);
+        void updateVelocity(size_t index);
+        void resetVelocity(size_t index);
+        int getVelUpdateCount(size_t index);
         DiagEnum checkDiag(CellState left_cell, CellState right_cell);
         CellState state(int x, int y);
 };

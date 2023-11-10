@@ -56,3 +56,11 @@ std::vector<std::tuple<int, int>> utils::bresenhamLine(int x1, int y1, int x2, i
 
 	return linePixels;
 };
+
+
+int utils::sign(float value) 
+{
+    if (value > 0.0f) return 1;
+    if (value < 0.0f) return -1;
+    return 0;
+};
