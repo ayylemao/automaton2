@@ -53,7 +53,7 @@ void Grid::update()
     size_t rowOffset;
     size_t columnOffset;
     bool leftToRight;
-    for (size_t row = size_y - 1; row --> 0;)
+    for (size_t row = size_y; row --> 0;)
     {
         rowOffset = row * size_x;
         leftToRight = utils::coinToss();
@@ -67,6 +67,7 @@ void Grid::update()
 
 void Grid::updateCell(size_t index)
 {
+    int y_max = 0;
     sf::Vector2i pos = to_2d(index);
     auto x = pos.x;
     auto y = pos.y;
@@ -77,6 +78,13 @@ void Grid::updateCell(size_t index)
         {
             int y_down = y + 1;
             CellState downState = state(x, y_down);
+
+            if (y > y_max)
+            {
+                y_max = y;
+                //std::cout << y_max << '\n'; 
+            }
+
             switch (downState)
             {
                 case CellState::OutOfBounds:
