@@ -32,10 +32,12 @@ class Grid
         void update();
         void updateCell(size_t index, size_t x, size_t y);
         void updateMovableSolid(Element &currElement, size_t index, size_t x, size_t y);
+        void updateLiquid(Element &currElement, size_t index, size_t x, size_t y);
         void updateVelocity(size_t index);
         void resetVelocity(size_t index);
         int getVelUpdateCountY(size_t index, float velY);
         int getVelUpdateCountX(size_t index, float velX);
         DiagEnum checkDiag(CellState left_cell, CellState right_cell);
+        DiagEnum checkHori(CellState left_cell, CellState right_cell);
         CellState state(int x, int y);
 };

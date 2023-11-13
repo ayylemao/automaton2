@@ -36,6 +36,7 @@ void Element::water()
     isLiquid = true;
     isEmpty = false;
     isMovable = true;
+    viscosity = 1.0;
     color = sf::Color(
     sf::Uint8(0),
     sf::Uint8(150 + rand() % 56),

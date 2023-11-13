@@ -14,6 +14,7 @@ struct Element
     sf::Color color = sf::Color(0, 0, 0, 0);
     sf::Vector2f vel;
     float friction = 0.9;
+    float viscosity = 0;
     Element();
     void stone();
     void sand();

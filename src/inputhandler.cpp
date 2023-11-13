@@ -146,6 +146,12 @@ void InputHandler::drawCircle(int x, int y, int r)
                 }
                 else if (lastKeyPressed == sf::Keyboard::Key::E)
                 {
+                    if (grid.isInBoundary(i, j))
+                    {
+                        Element water;
+                        water.water();
+                        grid.setElement(water, i, j);
+                    }
                 }
                 else if (lastKeyPressed == sf::Keyboard::Key::R)
                 {
