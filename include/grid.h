@@ -20,7 +20,7 @@ class Grid
         std::mt19937 eng;
         float maxSpeed = 4.0f;
         float g = 0.4f;
-        float velConv = 0.4f;
+        float velConv = 0.2f;
         Grid(size_t x, size_t y);
         size_t from_2d(int x, int y);
         sf::Vector2i to_2d(size_t index);

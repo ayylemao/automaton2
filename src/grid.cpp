@@ -170,8 +170,16 @@ void Grid::updateMovableSolid(Element& currElement, size_t index, size_t x, size
             CellState leftDiag = state(x - 1, y_down);
             CellState rightDiag = state(x + 1, y_down);
             DiagEnum diag = checkDiag(leftDiag, rightDiag);
-            if (diag == DiagEnum::Left) { swapElement(x, y, x-1, y_down); }
-            else if (diag == DiagEnum::Right) { swapElement(x, y, x+1, y_down); }
+            if (diag == DiagEnum::Left) 
+            { 
+                currElement.vel.x = -4*velConv;
+                swapElement(x, y, x-1, y_down); 
+            }
+            else if (diag == DiagEnum::Right)
+            {
+                currElement.vel.x = +4*velConv;
+                swapElement(x, y, x+1, y_down); 
+            }
             else if (diag == DiagEnum::None)
             {
                 int updateCount;

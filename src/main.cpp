@@ -66,7 +66,7 @@ int main()
 
         if (elapsed >= updateInterval && !mousePressLeft)
         {
-            //std::cout << 1.0/elapsed << '\n';
+            std::cout << 1.0/elapsed << '\n';
             elapsed = 0;
             grid.update();
         }
