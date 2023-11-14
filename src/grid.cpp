@@ -131,8 +131,6 @@ void Grid::updateLiquid(Element& currElement, size_t index, size_t x, size_t y)
 {
     int y_down = y + 1;
     CellState downState = state(x, y_down);
-    //if (downState == CellState::Liquid && leftState == CellState::Liquid && rightState == CellState::Liquid)
-    //{ return; }
     if (downState == CellState::Empty)
     {
         int updateCount = getVelUpdateCountY(index, currElement.vel.y);
@@ -143,8 +141,8 @@ void Grid::updateLiquid(Element& currElement, size_t index, size_t x, size_t y)
             return;
         }
         CellState checkFurther = CellState::Empty;
-        for (int update = 0; update < updateCount; update++) {
-            y_down = y_down + 1;
+        for (int update = 1; update <= updateCount; update++) {
+            y_down = y + update;
             checkFurther = state(x, y_down);
             if (checkFurther == CellState::OutOfBounds || checkFurther == CellState::Solid) {
                 break;
@@ -153,11 +151,11 @@ void Grid::updateLiquid(Element& currElement, size_t index, size_t x, size_t y)
         if (checkFurther == CellState::OutOfBounds) {setElement(Element(), x, y); return;}
         else if (checkFurther == CellState::Solid)
         {
-            if (getElement(x, y_down).vel.y == 0.0f)
-            {
-                currElement.vel.x = utils::coinToss() ? -velConv * currElement.vel.y : velConv * currElement.vel.y;
-                resetVelocity(index);
-            }
+            //if (getElement(x, y_down).vel.y == 0.0f)
+            //{
+            currElement.vel.x = utils::coinToss() ? -velConv * currElement.vel.y : velConv * currElement.vel.y;
+            resetVelocity(index);
+            //}
             swapElement(x, y, x, y_down - 2);
             return;
         }
@@ -183,7 +181,7 @@ void Grid::updateLiquid(Element& currElement, size_t index, size_t x, size_t y)
         CellState left = state(x - 1, y);
         CellState right = state(x + 1, y);
         DiagEnum horizontal = checkHori(left, right);
-        CellState checkFuther;
+        CellState checkFurther;
         int xdir = x;
         
             int velSign = utils::sign(currElement.vel.x);
@@ -208,25 +206,25 @@ void Grid::updateLiquid(Element& currElement, size_t index, size_t x, size_t y)
                 for (int i = 1; i <= updateCount; i++)
                 {
                     xdir = x + i*velSign;
-                    checkFuther = state(xdir, y);
-                    if (checkFuther != CellState::Empty)
+                    checkFurther = state(xdir, y);
+                    if (checkFurther != CellState::Empty)
                     {
                         break;
                     }
                 }
-                if (checkFuther == CellState::Solid || checkFuther == CellState::Liquid)
+                if (checkFurther == CellState::Solid || checkFurther == CellState::Liquid)
                 {
                     currElement.vel.x = 0.0f;
                     swapElement(x, y, xdir - velSign, y);
                     return;
                 }
-                else if (checkFuther == CellState::Empty)
+                else if (checkFurther == CellState::Empty)
                 {
                     //currElement.vel.x = 0.0f;
                     swapElement(x, y, xdir, y);
                     return;
                 }
-                else if (checkFuther == CellState::OutOfBounds)
+                else if (checkFurther == CellState::OutOfBounds)
                 {
                     setElement(Element(), x, y);
                     return;
@@ -307,36 +305,49 @@ void Grid::updateMovableSolid(Element& currElement, size_t index, size_t x, size
             }
             else if (diag == DiagEnum::None)
             {
-                int updateCount;
-                if (std::abs(currElement.vel.x) > 0.0f) { updateCount = getVelUpdateCountX(index, currElement.vel.x); }
-                else { return; }
+                
+                CellState checkFurther;
+                int xdir = x;
+        
+                int velSign = utils::sign(currElement.vel.x);
+                int updateCount = getVelUpdateCountX(index, currElement.vel.x);
                 if (updateCount < 1)
                 {
-                    currElement.vel.x = 0;
+                    currElement.vel.x = 0.0f;
                     return;
                 }
-                for (int i = 0; i < updateCount; i++)
+                else
                 {
-                    size_t x_horizontal = x + utils::sign(currElement.vel.x) * (i+1);
-                    CellState horizontalCell = state(x_horizontal, y);
-                    CellState downCell = state(x_horizontal, y+1);
-                    if (horizontalCell == CellState::Empty && downCell == CellState::Empty)
+                    for (int i = 1; i <= updateCount; i++)
                     {
-                        currElement.vel.x = 0.0f;
-                        swapElement(x, y, x_horizontal, y);
-                    }
-                    else if (horizontalCell == CellState::Solid || horizontalCell == CellState::OutOfBounds)
-                    {
-                        currElement.vel.x = 0.0f;
-                        swapElement(x, y, x_horizontal - utils::sign(currElement.vel.x), y);
+                        xdir = x + i*velSign;
+                        checkFurther = state(xdir, y);
+                        if (checkFurther != CellState::Empty)
+                        {
+                            break;
+                        }
+
+                        if (checkFurther == CellState::Solid || checkFurther == CellState::Liquid)
+                        {
+                            currElement.vel.x = 0.0f;
+                            swapElement(x, y, xdir - velSign, y);
+                        }
+                        else if (checkFurther == CellState::Empty)
+                        {
+                            currElement.vel.x *= currElement.friction;
+                            swapElement(x, y, xdir, y);
+                        }
+                        else if (checkFurther == CellState::OutOfBounds)
+                        {
+                            setElement(Element(), x, y);
+                        }
+                        
                     }
                 }
-                currElement.vel.x *= currElement.friction;
-                swapElement(x, y, x + (updateCount+1) * utils::sign(currElement.vel.x), y);
+                return;
             }
-            return;
-        }
             break;
+        }
         default:
             break;
     }
