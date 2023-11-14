@@ -16,6 +16,6 @@ target_link_libraries(automaton sfml-graphics sfml-audio sfml-window sfml-system
 # Enable profiling with gprof for the chip8 target
 set_target_properties(automaton PROPERTIES
     CXX_STANDARD 20
-    COMPILE_FLAGS "-Wall -pg -p"
-    LINK_FLAGS "-pg -p"
+    COMPILE_FLAGS "-Wall -p -pg"
+    LINK_FLAGS "-p -pg"
 )

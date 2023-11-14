@@ -190,13 +190,13 @@ void Grid::updateLiquid(Element& currElement, size_t index, size_t x, size_t y)
             {
                 if (horizontal == DiagEnum::Left)
                 {
-                    currElement.vel.x -= 2*velConv;
+                    currElement.vel.x -= currElement.viscosity;
                     swapElement(x, y, x - 1, y);
                     return;
                 }
                 else if (horizontal == DiagEnum::Right)
                 {
-                    currElement.vel.x += 2*velConv;
+                    currElement.vel.x += currElement.viscosity;
                     swapElement(x, y, x + 1, y);
                     return;
                 }
@@ -308,7 +308,6 @@ void Grid::updateMovableSolid(Element& currElement, size_t index, size_t x, size
                 
                 CellState checkFurther;
                 int xdir = x;
-        
                 int velSign = utils::sign(currElement.vel.x);
                 int updateCount = getVelUpdateCountX(index, currElement.vel.x);
                 if (updateCount < 1)
