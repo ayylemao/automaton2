@@ -40,4 +40,5 @@ class Grid
         DiagEnum checkDiag(CellState left_cell, CellState right_cell);
         DiagEnum checkHori(CellState left_cell, CellState right_cell);
         CellState state(int x, int y);
+        bool rollUpdate(float fluidity);
 };

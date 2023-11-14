@@ -108,6 +108,12 @@ int Grid::getVelUpdateCountX(size_t index, float velX)
     return floored + (dist(eng) < mod ? 1 : 0);
 }
 
+bool Grid::rollUpdate(float fluidity)
+{
+    std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+    return (dist(eng) < fluidity ? 1 : 0);
+}
+
 void Grid::updateCell(size_t index, size_t x, size_t y)
 {
     Element& currElement = getElement(x, y);
@@ -178,60 +184,61 @@ void Grid::updateLiquid(Element& currElement, size_t index, size_t x, size_t y)
     }
     if (downState == CellState::Solid || downState == CellState::Liquid)
     {
+        if (!rollUpdate(currElement.fluidity)) {return;}
         CellState left = state(x - 1, y);
         CellState right = state(x + 1, y);
         DiagEnum horizontal = checkHori(left, right);
         CellState checkFurther;
         int xdir = x;
         
-            int velSign = utils::sign(currElement.vel.x);
-            int updateCount = getVelUpdateCountX(index, currElement.vel.x);
-            if (updateCount < 1)
+        int velSign = utils::sign(currElement.vel.x);
+        int updateCount = getVelUpdateCountX(index, currElement.vel.x);
+        if (updateCount < 1)
+        {
+            if (horizontal == DiagEnum::Left)
             {
-                if (horizontal == DiagEnum::Left)
-                {
-                    currElement.vel.x -= currElement.viscosity;
-                    swapElement(x, y, x - 1, y);
-                    return;
-                }
-                else if (horizontal == DiagEnum::Right)
-                {
-                    currElement.vel.x += currElement.viscosity;
-                    swapElement(x, y, x + 1, y);
-                    return;
-                }
+                currElement.vel.x -= currElement.viscosity;
+                swapElement(x, y, x - 1, y);
+                return;
             }
-            else
+            else if (horizontal == DiagEnum::Right)
             {
-                for (int i = 1; i <= updateCount; i++)
-                {
-                    xdir = x + i*velSign;
-                    checkFurther = state(xdir, y);
-                    if (checkFurther != CellState::Empty)
-                    {
-                        break;
-                    }
-                }
-                if (checkFurther == CellState::Solid || checkFurther == CellState::Liquid)
-                {
-                    currElement.vel.x = 0.0f;
-                    swapElement(x, y, xdir - velSign, y);
-                    return;
-                }
-                else if (checkFurther == CellState::Empty)
-                {
-                    //currElement.vel.x = 0.0f;
-                    swapElement(x, y, xdir, y);
-                    return;
-                }
-                else if (checkFurther == CellState::OutOfBounds)
-                {
-                    setElement(Element(), x, y);
-                    return;
-                }
+                currElement.vel.x += currElement.viscosity;
+                swapElement(x, y, x + 1, y);
+                return;
             }
-
         }
+        else
+        {
+            for (int i = 1; i <= updateCount; i++)
+            {
+                xdir = x + i*velSign;
+                checkFurther = state(xdir, y);
+                if (checkFurther != CellState::Empty)
+                {
+                    break;
+                }
+            }
+            if (checkFurther == CellState::Solid || checkFurther == CellState::Liquid)
+            {
+                currElement.vel.x = 0.0f;
+                swapElement(x, y, xdir - velSign, y);
+                return;
+            }
+            else if (checkFurther == CellState::Empty)
+            {
+                //currElement.vel.x = 0.0f;
+                swapElement(x, y, xdir, y);
+                return;
+            }
+            else if (checkFurther == CellState::OutOfBounds)
+            {
+                setElement(Element(), x, y);
+                return;
+            }
+        }
+
+    }
     return;
 }
 

@@ -161,6 +161,15 @@ void InputHandler::drawCircle(int x, int y, int r)
                         grid.setElement(empty, i, j);
                     }
                 }
+                else if (lastKeyPressed == sf::Keyboard::Key::T)
+                {
+                    if (grid.isInBoundary(i, j))
+                    {
+                        Element lava;
+                        lava.lava();
+                        grid.setElement(lava, i, j);
+                    }
+                }
             }
         }
     }
@@ -192,7 +201,6 @@ void InputHandler::changeRadius(sf::Event& event)
 
 void InputHandler::drawMouseRadius()
 {
-    const int numPoints = 50; 
     int x = sf::Mouse::getPosition(renderer.window).x;
     int y = sf::Mouse::getPosition(renderer.window).y;
     float r = markerRadius * cellSize;

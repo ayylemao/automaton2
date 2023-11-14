@@ -13,10 +13,13 @@ struct Element
     bool hasMoved = false;
     sf::Color color = sf::Color(0, 0, 0, 0);
     sf::Vector2f vel;
-    float friction = 0.9;
-    float viscosity = 0;
+    float friction = 0.9f;
+    float viscosity = 0.0f;
+    float fluidity = 0.0f;
+    float density = 1.0f;
     Element();
     void stone();
     void sand();
     void water();
+    void lava();
 };
